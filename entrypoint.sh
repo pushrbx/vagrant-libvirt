@@ -55,6 +55,9 @@ fi
 
 if [[ ${PODMAN_ROOTLESS} -eq 0 ]]
 then
+    # To determine default user to use search for the Vagrantfile starting with
+    # the current working directory. If it can't be found, use the owner/group
+    # from the current working directory anyway
     vagrantfile="${VAGRANT_VAGRANTFILE:-Vagrantfile}"
     path="$(pwd)"
     while [[ "$path" != "" && ! -e "$path/$vagrantfile" ]]
