@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:1.0-experimental
 ARG VAGRANT_VERSION=2.4.9
 
+
 FROM ubuntu:noble as base
 
 RUN apt update \
@@ -55,12 +56,17 @@ WORKDIR /build
 COPY . .
 RUN rake build
 
-# Install plugin using vagrant's plugin manager
-RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
+RUN mkdir -p /tmp/vagrant-home \
+    && VAGRANT_HOME=/tmp/vagrant-home vagrant plugin install ./pkg/vagrant-libvirt*.gem \
+    && mkdir -p /vagrant-libvirt-plugin \
+    && mv /tmp/vagrant-home/plugins.json /vagrant-libvirt-plugin/plugins.json \
+    && mv /tmp/vagrant-home/gems /vagrant-libvirt-plugin/gems \
+    && rm -rf /tmp/vagrant-home \
+    && cd / && rm -rf /build
 
 FROM base as slim
 
-COPY --from=build /.vagrant.d /.vagrant.d
+COPY --from=build /vagrant-libvirt-plugin /vagrant-libvirt-plugin
 
 COPY entrypoint.sh /usr/local/bin/
 
