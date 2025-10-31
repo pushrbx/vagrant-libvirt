@@ -31,6 +31,10 @@ fi
 vdir_mnt=$(stat -c %m ${vdir})
 case "${vdir_mnt%%/}" in
     /*)
+        # user mounted vagrant home is not mounted on /, so
+        # presumably it is a mount bind or mounted volume and should
+        # be able to persist boxes and machine index.
+        #
         ;;
     *)
         echo -n "${vdir} is not set to a bind mounted volume, may not be able "
@@ -82,6 +86,9 @@ then
         then
             if [[ -z "$(ls -A ${vdir})" ]]
             then
+                # vdir has just been created and is owned by the wrong user
+                # modify the ownership to allow the required directories to
+                # be created
                 chown ${USER_UID}:${USER_GID} ${vdir}
             else
                 echo -n "ERROR: Attempting to use a directory on ${vdir} that is not "
